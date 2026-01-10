@@ -1,6 +1,6 @@
 from langchain_ollama import ChatOllama
 from langchain_core.messages import SystemMessage, HumanMessage
-from ferramentas import ver_hora, abrir_programa, pesquisar_internet, monitorar_sistema, controlar_midia
+from ferramentas import ver_hora, abrir_programa, pesquisar_internet, monitorar_sistema, controlar_midia, ler_memoria, salvar_memoria
 
 
 print("🧠 Conectando ao Cérebro Local...")
@@ -16,7 +16,9 @@ sistema = SystemMessage(
 
 llm = ChatOllama(model="llama3.2",temperature=0.5)
 
-lista_ferramentas = [ver_hora, abrir_programa, pesquisar_internet, monitorar_sistema, controlar_midia]
+lista_ferramentas = [
+  ver_hora, abrir_programa, pesquisar_internet, monitorar_sistema, controlar_midia, ler_memoria, salvar_memoria
+  ]
 llm_com_ferramentas = llm.bind_tools(lista_ferramentas)
 
 mapa_funcoes = {
@@ -24,7 +26,9 @@ mapa_funcoes = {
   "abrir_programa": abrir_programa,
   "pesquisar_internet": pesquisar_internet,
   "monitorar_sistema": monitorar_sistema,
-  "controlar_midia": controlar_midia
+  "controlar_midia": controlar_midia,
+  "ler_memoria": ler_memoria,
+  "salvar_memoria": salvar_memoria
 }
 
 def pensar(texto_usuario):

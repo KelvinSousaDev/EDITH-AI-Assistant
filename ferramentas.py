@@ -4,6 +4,7 @@ from langchain_core.tools import tool
 from ddgs import DDGS
 import psutil
 import pyautogui
+import os
 
 @tool
 def ver_hora():
@@ -96,3 +97,35 @@ def controlar_midia(comando: str):
     return f"Comando de mídia '{comando_limpo}' executado."
   else:
     return f"Comando de mídia '{comando_limpo}' não reconhecido."
+  
+@tool
+def salvar_memoria(texto: str):
+  """
+    Salva uma informação importante na memória de longo prazo.
+    Use isso quando o usuário disser 'anote isso', 'lembre-se que', ou passar uma informação pessoal (senha, nome, gosto).
+  """
+
+  if not os.path.exists("memoria"):
+    os.makedirs("memoria")
+
+  caminho = "memoria/dados.txt"
+  data_hora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+
+  with open(caminho, "a", encoding="utf-8") as arquivo:
+    arquivo.write(f"[{data_hora}] {texto}\n")
+  return "Informação salva no banco de dados."
+
+@tool
+def ler_memoria():
+  """
+    Lê todas as anotações salvas na memória de longo prazo.
+    Use isso quando o usuário perguntar 'o que eu te pedi para lembrar?', 'qual é a senha?', 'o que você sabe sobre mim?'.
+  """
+
+  caminho = "memoria/dados.txt"
+  if not os.path.exists(caminho):
+    return "Minha memória está vazia por enquanto."
+  
+  with open(caminho, "r", encoding="utf-8") as arquivo:
+    conteudo = arquivo.read()
+  return conteudo
