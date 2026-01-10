@@ -1,7 +1,8 @@
 import datetime
 import subprocess
 from langchain_core.tools import tool
-from duckduckgo_search import DDGS
+from ddgs import DDGS
+import psutil
 
 @tool
 def ver_hora():
@@ -51,3 +52,22 @@ def pesquisar_internet(pergunta: str):
       resposta += frase
     
     return resposta
+  
+@tool
+def monitorar_sistema():
+  """
+    Verifica o uso atual do sistema (CPU, Memória RAM e Bateria).
+    Use isso quando o usuário perguntar: 'Como está o PC?', 'Uso de CPU', 'Memória' ou 'Bateria'.
+  """
+
+  uso_cpu = psutil.cpu_percent(interval=1)
+  uso_ram = psutil.virtual_memory().percent
+
+  resposta = f"CPU em {uso_cpu}%. Memória RAM em {uso_ram}%."
+
+  bateria = psutil.sensors_battery()
+  if bateria:
+    resposta += f"Bateria em {bateria.percent}%"
+  else:
+    resposta += " Ligado na tomada (Sem bateria)."
+  return resposta
