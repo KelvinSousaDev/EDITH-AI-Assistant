@@ -15,7 +15,7 @@ def tocar_audio():
   pygame.mixer.music.play()
 
   while pygame.mixer.music.get_busy():
-    pygame.time.Clock().tick(10)
+    pygame.time.Clock().tick(15)
 
   pygame.mixer.music.unload()
   pygame.mixer.quit()

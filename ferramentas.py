@@ -1,10 +1,13 @@
 import datetime
 import subprocess
 from langchain_core.tools import tool
+from duckduckgo_search import DDGS
 
 @tool
 def ver_hora():
-  """Retorna o horário atual do sistema. Use isso quando o usuário perguntar as horas ou a data de hoje."""
+  """
+    Retorna o horário atual do sistema. Use isso quando o usuário perguntar as horas ou a data de hoje.
+  """
   hora_atual = datetime.datetime.now()
   hora_formatada = hora_atual.strftime("%H:%M do dia %d/%m/%Y")
   return hora_formatada
@@ -14,7 +17,7 @@ def abrir_programa(nome_programa: str):
   """
     Abre um programa no computador.
     O argumento 'nome_programa' deve ser um destes: 'chrome', 'bloco de notas', 'calculadora', 'spotify'.
-    """
+  """
   
   programas = {
     "chrome": "start chrome",
@@ -30,3 +33,21 @@ def abrir_programa(nome_programa: str):
     return f"Abrindo {chave} para o senhor."
   else:
     return f"Desculpe, não sei como abrir '{nome_programa}' ainda."
+
+@tool
+def pesquisar_internet(pergunta: str):
+  """
+      Pesquisa informações na internet.
+      Use isso para buscar fatos atuais, notícias, clima ou dados que você não sabe.
+  """
+
+  with DDGS() as ddgs:
+    resultados = ddgs.text(pergunta, max_results=3)
+    resposta = ""
+    for resultado in resultados:
+      titulo = resultado["title"]
+      resumo = resultado["body"]
+      frase = f"{titulo} - {resumo} \n"
+      resposta += frase
+    
+    return resposta
