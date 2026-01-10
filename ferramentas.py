@@ -3,6 +3,7 @@ import subprocess
 from langchain_core.tools import tool
 from ddgs import DDGS
 import psutil
+import pyautogui
 
 @tool
 def ver_hora():
@@ -71,3 +72,27 @@ def monitorar_sistema():
   else:
     resposta += " Ligado na tomada (Sem bateria)."
   return resposta
+
+@tool
+def controlar_midia(comando: str):
+  """
+    Controla música e sons do computador.
+    O argumento 'comando' deve ser um destes: 'pausar', 'tocar', 'proxima', 'anterior', 'aumentar', 'diminuir', 'mudo'.
+  """
+
+  teclas = {
+    "pausar": "playpause",
+    "tocar": "playpause",
+    "proxima": "nexttrack",
+    "anterior": "prevtrack",
+    "aumentar": "volumeup",
+    "diminuir": "volumedown",
+    "mudo": "volumemute"
+  }
+  comando_limpo = comando.lower().strip()
+
+  if comando_limpo in teclas:
+    pyautogui.press(teclas[comando_limpo])
+    return f"Comando de mídia '{comando_limpo}' executado."
+  else:
+    return f"Comando de mídia '{comando_limpo}' não reconhecido."
