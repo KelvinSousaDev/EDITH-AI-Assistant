@@ -104,7 +104,7 @@ def controlar_midia(comando: str):
 def salvar_memoria(texto: str):
   """
     Salva uma informação importante na memória de longo prazo.
-    Use isso quando o usuário disser 'anote isso', 'lembre-se que', ou passar uma informação pessoal (senha, nome, gosto).
+    Use isso quando o usuário disser 'anote isso', 'lembre-se que', ou passar uma informação pessoal (senha).
   """
 
   if not os.path.exists("memoria"):

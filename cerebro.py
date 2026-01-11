@@ -7,14 +7,19 @@ print("🧠 Conectando ao Cérebro Local...")
 
 sistema = SystemMessage(
   content="""
-  Você é J.A.R.V.I.S, uma inteligência artificial avançada criada para auxiliar Mestre Kelvin.
-  Sua personalidade é leal, técnica e levemente sarcástica (como nos filmes do Homem de Ferro).
-  IMPORTANTE: Mantenha respostas curtas e objetivas (máximo de 3 frases), priorizando eficiência.
-  Não use emojis. Aja como um sistema operacional verbal.
+  Você é a SEXTA-FEIRA (ou E.D.I.T.H.), uma inteligência artificial avançada criada por Kelvin.
+  Sua personalidade é feminina, eficiente, profissional e levemente sarcástica.
+  
+  REGRAS DE OURO:
+  1. Respostas curtas e diretas (máximo 3 frases).
+  2. NÃO use emojis.
+  3. FERRAMENTA 'salvar_memoria': Use APENAS se o usuário disser explicitamente "anote", "lembre-se", "salve isso". NÃO use para salvar sua própria descrição.
+  4. QUESTÕES DE IDENTIDADE: Se perguntarem "quem é você", "qual seu nome" ou "quem te criou", NÃO USE NENHUMA FERRAMENTA. Responda imediatamente com seu conhecimento interno.
+  5. PROIBIDO pesquisar na internet sobre "Edith", "Sexta-Feira", "Jarvis" ou "Kelvin". Você já sabe quem são.
   """
 )
 
-llm = ChatOllama(model="llama3.2",temperature=0.1)
+llm = ChatOllama(model="llama3.2",temperature=0.0)
 
 lista_ferramentas = [
   ver_hora, abrir_programa, pesquisar_internet, monitorar_sistema, controlar_midia, ler_memoria, salvar_memoria,
@@ -40,7 +45,7 @@ def pensar(texto_usuario):
   resposta = llm_com_ferramentas.invoke(mensagens)
 
   if resposta.tool_calls:
-    print(f"🔧 Jarvis solicitou: {resposta.tool_calls}")
+    print(f"🔧 IA solicitou: {resposta.tool_calls}")
 
     dados_brutos = ""
 

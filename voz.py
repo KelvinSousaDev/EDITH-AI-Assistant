@@ -3,10 +3,10 @@ import asyncio
 import pygame
 import os
 
-VOZ = "pt-BR-AntonioNeural"
+VOZ = "pt-BR-FranciscaNeural"
 
 async def gerar_audio(texto):
-  comunicacao = edge_tts.Communicate(texto, VOZ)
+  comunicacao = edge_tts.Communicate(texto, VOZ, rate="+10%")
   await comunicacao.save("fala_temp.mp3")
 
 def tocar_audio():
@@ -21,5 +21,11 @@ def tocar_audio():
   pygame.mixer.quit()
   
 def falar(texto):
+  if os.path.exists("fala_temp.mp3"):
+    try:
+      os.remove("fala_temp.mp3")
+    except:
+      pass
+    
   asyncio.run(gerar_audio(texto))
   tocar_audio()

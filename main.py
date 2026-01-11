@@ -2,7 +2,7 @@ import cerebro
 from ouvidos import Ouvidos
 import voz
 
-WAKE_WORDS = ["jarvis", "alfred"]
+WAKE_WORDS = ["jarvis", "sexta feira", "edith", "sexta-feira"]
 
 def iniciar_jarvis():
   print("Inicializando...")
@@ -27,10 +27,10 @@ def iniciar_jarvis():
       if ativou:
         print(f"✅ Comando aceito: {texto_usuario}")
         print("🧠 Processando...")
-        texto_final = texto_usuario.replace("Jarvis", "").replace("Alfred", "").strip()
+        texto_final = texto_usuario.replace("Edith", "").replace("Sexta-feira", "").replace("Jarvis", "").strip().lower()
 
         resposta_jarvis = cerebro.pensar(texto_final)
-        print(f"Jarvis: {resposta_jarvis}")
+        print(f"IA: {resposta_jarvis}")
         voz.falar(resposta_jarvis)
       
       else:
