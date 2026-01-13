@@ -21,7 +21,7 @@ class Ouvidos:
         with open("temp_mic.wav", "wb") as f:
           f.write(audio.get_wav_data())
 
-        segmentos, _ = self.modelo.transcribe("temp_mic.wav", language="pt", initial_prompt="A conversa é com uma IA chamada Jarvis, Edith ou Sexta-feira criada por Kelvin.")
+        segmentos, _ = self.modelo.transcribe("temp_mic.wav", language="pt")
         texto_transcrito = ""
 
         for segmento in segmentos:

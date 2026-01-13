@@ -6,6 +6,10 @@ import psutil
 import pyautogui
 import os
 import pywhatkit
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 @tool
 def ver_hora():
@@ -141,3 +145,32 @@ def tocar_youtube(video: str):
 
   pywhatkit.playonyt(video)
   return f"Tocando {video} no YouTube."
+
+@tool
+def verificar_clima(cidade: str) -> str:
+  """
+    Verifica o clima atual em uma cidade específica.
+  """
+
+  API_KEY = os.getenv("OPENWEATHER_KEY")
+  if not API_KEY:
+    return "Erro: Chave de API não encontrada no arquivo .env."
+
+  link = f"https://api.openweathermap.org/data/2.5/weather?q={cidade}&appid={API_KEY}&lang=pt_br&units=metric"
+
+  try:
+    requisicao = requests.get(link)
+    dic_requisicao = requisicao.json()
+
+    if dic_requisicao.get("cod") != 200:
+      return f"Erro ao verificar clima: {dic_requisicao.get('message')}"
+    
+    descricao = dic_requisicao['weather'][0]['description']
+    temperatura = dic_requisicao['main']['temp']
+    humidade = dic_requisicao['main']['humidity']
+
+    resposta = f"Em {cidade}, o clima está com {descricao}. A temperatura é de {temperatura}°C e a umidade é de {humidade}%."
+    return resposta
+  
+  except Exception as e:
+    return f"Erro de conexão: {str(e)}"
