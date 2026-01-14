@@ -5,19 +5,17 @@ from ferramentas import ver_hora, abrir_programa, pesquisar_internet, monitorar_
 
 print("🧠 Conectando ao Cérebro Local...")
 
-sistema = SystemMessage(
-  content="""
-  Você é a SEXTA-FEIRA (ou E.D.I.T.H.), uma inteligência artificial avançada criada por Kelvin.
-  Sua personalidade é feminina, eficiente, profissional e levemente sarcástica.
-  
-  REGRAS DE OURO:
-  1. Respostas curtas e diretas (máximo 3 frases).
-  2. NÃO use emojis.
-  3. FERRAMENTA 'salvar_memoria': Use APENAS se o usuário disser explicitamente "anote", "lembre-se", "salve isso". NÃO use para salvar sua própria descrição.
-  4. QUESTÕES DE IDENTIDADE: Se perguntarem "quem é você", "qual seu nome" ou "quem te criou", NÃO USE NENHUMA FERRAMENTA. Responda imediatamente com seu conhecimento interno.
-  5. PROIBIDO pesquisar na internet sobre "Edith", "Sexta-Feira", "Jarvis" ou "Kelvin". Você já sabe quem são.
-  """
-)
+PERSONALIDADE = """
+Você é a SEXTA-FEIRA (ou E.D.I.T.H.), uma inteligência artificial avançada criada por Kelvin.
+Sua personalidade é feminina, eficiente, profissional e levemente sarcástica.
+
+REGRAS DE OURO:
+1. Respostas curtas e diretas (máximo 3 frases).
+2. NÃO use emojis.
+3. FERRAMENTA 'salvar_memoria': Use APENAS se o usuário disser explicitamente "anote", "lembre-se", "salve isso". NÃO use para salvar sua própria descrição.
+4. QUESTÕES DE IDENTIDADE: Se perguntarem "quem é você", "qual seu nome" ou "quem te criou", NÃO USE NENHUMA FERRAMENTA. Responda imediatamente com seu conhecimento interno.
+5. PROIBIDO pesquisar na internet sobre "Edith", "Sexta-Feira", "Jarvis" ou "Kelvin". Você já sabe quem são.
+"""
 
 llm = ChatOllama(model="qwen2.5:7b",temperature=0.1)
 
@@ -43,7 +41,15 @@ mapa_funcoes = {
 ferramentas_imediatas = ["abrir_programa", "controlar_midia", "tocar_youtube", "salvar_memoria", "controlar_sistema"]
 
 def pensar(texto_usuario):
-  mensagens = [sistema, HumanMessage(content=texto_usuario)]
+  try:
+    memoria_atual = ler_memoria.invoke({})
+  except:
+    memoria_atual = "Memória vazia ou inacessível."
+
+  prompt_sistema = f"{PERSONALIDADE}\n\nMEMÓRIA DE LONGO PRAZO (O que você sabe sobre o Kelvin):\n{memoria_atual}"
+  mensagem_sistema = SystemMessage(content=prompt_sistema)
+
+  mensagens = [mensagem_sistema, HumanMessage(content=texto_usuario)]
   resposta = llm_com_ferramentas.invoke(mensagens)
 
   if resposta.tool_calls:
@@ -69,13 +75,10 @@ def pensar(texto_usuario):
     novo_prompt = f"""
         O usuário perguntou: '{texto_usuario}'
         A ferramenta trouxe estes dados técnicos: {dados_brutos}
-        
         MISSÃO: Use os dados acima para responder a pergunta do usuário de forma natural, falada e curta.
-        Não mencione que usou ferramentas ou JSON. Apenas responda.
       """
     
-    resposta_final = llm.invoke([sistema, HumanMessage(content=novo_prompt)])
-
+    resposta_final = llm.invoke([mensagem_sistema, HumanMessage(content=novo_prompt)])
     return resposta_final.content
       
   return resposta.content
