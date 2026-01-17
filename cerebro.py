@@ -1,6 +1,6 @@
 from langchain_ollama import ChatOllama
 from langchain_core.messages import SystemMessage, HumanMessage
-from ferramentas import ver_hora, abrir_programa, pesquisar_internet, monitorar_sistema, controlar_midia, ler_memoria, salvar_memoria, tocar_youtube, verificar_clima, controlar_sistema, consultar_vigilante
+from ferramentas import ver_hora, abrir_programa, pesquisar_internet, monitorar_sistema, controlar_midia, ler_memoria, salvar_memoria, tocar_youtube, verificar_clima, controlar_sistema, consultar_vigilante, analisar_tendencia
 
 
 print("🧠 Conectando ao Cérebro Local...")
@@ -21,7 +21,7 @@ llm = ChatOllama(model="qwen2.5:7b",temperature=0.1)
 
 lista_ferramentas = [
   ver_hora, abrir_programa, pesquisar_internet, monitorar_sistema, controlar_midia, ler_memoria, salvar_memoria,
-  tocar_youtube, verificar_clima, controlar_sistema, consultar_vigilante
+  tocar_youtube, verificar_clima, controlar_sistema, consultar_vigilante, analisar_tendencia
   ]
 llm_com_ferramentas = llm.bind_tools(lista_ferramentas)
 
@@ -36,7 +36,8 @@ mapa_funcoes = {
   "tocar_youtube": tocar_youtube,
   "verificar_clima": verificar_clima,
   "controlar_sistema": controlar_sistema,
-  "consultar_vigilante": consultar_vigilante
+  "consultar_vigilante": consultar_vigilante,
+  "analisar_tendencia": analisar_tendencia
 }
 
 ferramentas_imediatas = ["abrir_programa", "controlar_midia", "tocar_youtube", "salvar_memoria", "controlar_sistema"]

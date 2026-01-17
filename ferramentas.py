@@ -10,6 +10,7 @@ import pywhatkit
 import requests
 from dotenv import load_dotenv
 import psycopg2
+import statistics
 
 load_dotenv()
 
@@ -217,7 +218,7 @@ def consultar_vigilante(produto: str):
   try:
     conn = psycopg2.connect(url)
     cursor = conn.cursor()
-
+    # Busca de Dados, limitando somente no produto que perguntou
     query = """
       SELECT dim.loja, dim.nome_produto, f.valor_coletado, f.data_coleta
       FROM dim_produtos as dim
@@ -229,7 +230,7 @@ def consultar_vigilante(produto: str):
     cursor.execute(query, (f"%{produto}%",))
     resultado = cursor.fetchone()
     conn.close()
-
+    # Relatório dos dados recebidos
     if resultado:
       loja, nome_produto, valor_coletado, data_coleta = resultado
       return f"REGISTRO DO VIGILANTE: O produto '{nome_produto}' foi visto no site {loja} por R$ {valor_coletado} em {data_coleta}."
@@ -238,3 +239,58 @@ def consultar_vigilante(produto: str):
     
   except Exception as e:
     return f"Erro técnico ao consultar o banco de dados: {str(e)}"
+
+@tool
+def analisar_tendencia(produto: str):
+  """
+    Analisa o histórico de preços de um produto para dizer se está barato ou caro.
+    Use quando o usuário perguntar: 'vale a pena comprar [produto]?', 'analise a tendência do [produto]', 'o [produto] está barato?'.
+  """
+  url = os.getenv("DATABASE_URL")
+  if not url:
+    return "Erro: Configuração de banco de dados ausente."
+  
+  try:
+    conn = psycopg2.connect(url)
+    cursor = conn.cursor()
+    query = """
+      SELECT f.valor_coletado, dim.loja, f.data_coleta
+      FROM dim_produtos as dim
+      JOIN fato_precos as f ON dim.id = f.produto_id
+      WHERE dim.nome_produto ILIKE %s
+      ORDER BY f.data_coleta DESC
+      LIMIT 30
+    """
+    cursor.execute(query, (f"%{produto}%",))
+    resultados = cursor.fetchall()
+    conn.close
+    if not resultados:
+      return f"Não tenho dados históricos suficientes sobre '{produto}' para uma análise."
+    # Processamento dos dados recebidos
+    precos = [float(linha[0]) for linha in resultados]
+    preco_atual = precos[0]
+    preco_medio = statistics.mean(precos)
+    menor_preco = min(precos)
+    maior_preco = max(precos)
+    # Análise de tendência
+    diferenca = preco_atual - preco_medio
+    porcentagem = (diferenca / preco_medio) * 100
+
+    if porcentagem < -10:
+      conselho = "Oportunidade EXCELENTE. O preço caiu muito."
+    elif porcentagem < 0:
+      conselho = "Bom momento. Está levemente abaixo da média."
+    else:
+      conselho = "Cuidado. O preço está acima da média histórica."
+    
+    relatorio = (
+      f"ANÁLISE DE MERCADO PARA '{produto.upper()}':\n"
+      f"- Preço Atual: R$ {preco_atual:.2f}\n"
+      f"- Média Histórica: R$ {preco_medio:.2f}\n"
+      f"- Menor Preço Já Visto: R$ {menor_preco:.2f}\n"
+      f"VEREDITO: {conselho} (Variação de {porcentagem:.1f}%)"
+    )
+    return relatorio
+  
+  except Exception as e:
+    return f"Erro ao calcular tendências: {str(e)}"
