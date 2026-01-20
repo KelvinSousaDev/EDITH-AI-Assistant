@@ -1,5 +1,7 @@
 import time
 import datetime
+from langchain_ollama import OllamaEmbeddings
+from langchain_chroma import Chroma
 from langchain_core.tools import tool
 from ddgs import DDGS
 import psutil
@@ -11,12 +13,20 @@ from dotenv import load_dotenv
 import psycopg2
 import statistics
 import base64
-import json
 from io import BytesIO
-from PIL import Image
-
 
 load_dotenv()
+
+print("💾 Carregando Módulo de Memória (Embeddings)...")
+embeddings_model = OllamaEmbeddings(model="nomic-embed-text",)
+
+diretorio_banco = "./chroma_db"
+
+vector_store = Chroma(
+    collection_name="memoria_edith",
+    embedding_function=embeddings_model,
+    persist_directory=diretorio_banco
+)
 
 @tool
 def ver_hora():
@@ -140,34 +150,43 @@ def controlar_midia(comando: str):
 @tool
 def salvar_memoria(texto: str):
   """
-    Salva uma informação importante na memória de longo prazo.
-    Use isso quando o usuário disser 'anote isso', 'lembre-se que', ou passar uma informação pessoal (senha).
+    FERRAMENTA OBRIGATÓRIA. USE SEMPRE que o usuário disser "anote", "lembre", "grave" ou compartilhar um fato sobre ele (nome, gosto, projeto).
+    NUNCA responda "anotei" sem chamar esta função primeiro.
   """
+  try:
+    vector_store.add_texts(
+      texts=[texto],
+      metadatas=[{"data_registro": str(datetime.datetime.now())}]
+    )
+    return "Memória gravada no banco vetorial com sucesso."
+  
+  except Exception as e:
+    return "Erro ao gravar na memória: " + str(e)
 
-  if not os.path.exists("memoria"):
-    os.makedirs("memoria")
-
-  caminho = "memoria/dados.txt"
-  data_hora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-
-  with open(caminho, "a", encoding="utf-8") as arquivo:
-    arquivo.write(f"[{data_hora}] {texto}\n")
-  return "Informação salva no banco de dados."
 
 @tool
-def ler_memoria():
+def buscar_memoria(pergunta: str):
   """
-    Lê todas as anotações salvas na memória de longo prazo.
-    Use isso quando o usuário perguntar 'o que eu te pedi para lembrar?', 'qual é a senha?', 'o que você sabe sobre mim?'.
+    Busca memórias relevantes baseadas na pergunta.
   """
+  if not pergunta:
+    return "Nenhuma pergunta feita para buscar na memória."
+  try:
+    resultados = vector_store.similarity_search(query=pergunta,k=5)
+    texto_final = ""
 
-  caminho = "memoria/dados.txt"
-  if not os.path.exists(caminho):
-    return "Minha memória está vazia por enquanto."
+    for documento in resultados:
+      conteudo = documento.page_content
+      meta = documento.metadata.get("data_registro", "Data desconhecida")
+      texto_final += f"[Registro de {meta}]: {conteudo}\n---\n"
+    
+    if not texto_final:
+      return "Não encontrei nada relevante na memória sobre isso."
+    
+    return texto_final
   
-  with open(caminho, "r", encoding="utf-8") as arquivo:
-    conteudo = arquivo.read()
-  return conteudo
+  except Exception as e:
+    return f"Erro ao buscar memória: {str(e)}"
 
 @tool
 def tocar_youtube(video: str):
@@ -330,7 +349,7 @@ def ver_tela(pergunta: str):
     if response.status_code == 200:
       resultado = response.json()
       descricao = resultado.get("response", "Sem resposta visual.")
-      
+
       if not descricao or "send an image" in descricao.lower():
         return "Erro visual: O modelo LLaVA não recebeu a imagem corretamente."
       

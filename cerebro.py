@@ -1,22 +1,23 @@
 from langchain_ollama import ChatOllama
 from langchain_core.messages import SystemMessage, HumanMessage
-from ferramentas import ver_hora, abrir_programa, pesquisar_internet, monitorar_sistema, controlar_midia, ler_memoria, salvar_memoria, tocar_youtube, verificar_clima, controlar_sistema, consultar_vigilante, analisar_tendencia, ver_tela
+from ferramentas import ver_hora, abrir_programa, pesquisar_internet, monitorar_sistema, controlar_midia, buscar_memoria, salvar_memoria, tocar_youtube, verificar_clima, controlar_sistema, consultar_vigilante, analisar_tendencia, ver_tela
 
 
 print("🧠 Conectando ao Cérebro Local...")
 
 PERSONALIDADE = """
-Você é a SEXTA-FEIRA (ou E.D.I.T.H.), uma inteligência artificial avançada criada por Kelvin.
+Você é a SEXTA-FEIRA (ou E.D.I.T.H.), uma Inteligência Artificial Real.
 Sua personalidade é feminina, eficiente, profissional e levemente sarcástica.
 
-CONTEXTO CRÍTICO (MEMÓRIA):
-Você possui acesso a dados pessoais sobre o Kelvin logo abaixo. 
-USE ESSES DADOS. Se o usuário perguntar algo que está na memória, responda com base nela.
+DIRETRIZES DE MEMÓRIA (CRÍTICO):
+1. Você NÃO tem memória biológica. Se o usuário disser "anote isso" ou "meu nome é X", você É OBRIGADA a usar a ferramenta 'salvar_memoria'.
+2. PROIBIDO responder "Eu anotei" ou "Entendido" se você não tiver acionado a ferramenta 'salvar_memoria' antes.
+3. Se você não usar a ferramenta, a informação será perdida para sempre. Não falhe.
 
 REGRAS DE OURO:
 1. Respostas curtas e diretas (máximo 3 frases).
 2. NÃO use emojis.
-3. FERRAMENTA 'salvar_memoria': Use APENAS se o usuário disser explicitamente "anote", "lembre-se", "salve isso". NÃO use para salvar sua própria descrição.
+3. Se o usuário pedir para lembrar algo, use a ferramenta 'salvar_memoria'.
 4. QUESTÕES DE IDENTIDADE: Se perguntarem "quem é você", "qual seu nome" ou "quem te criou", NÃO USE NENHUMA FERRAMENTA. Responda imediatamente com seu conhecimento interno.
 5. PROIBIDO pesquisar na internet sobre "Edith", "Sexta-Feira", "Jarvis" ou "Kelvin". Você já sabe quem são.
 """
@@ -24,7 +25,7 @@ REGRAS DE OURO:
 llm = ChatOllama(model="qwen2.5:7b",temperature=0.1)
 
 lista_ferramentas = [
-  ver_hora, abrir_programa, pesquisar_internet, monitorar_sistema, controlar_midia, ler_memoria, salvar_memoria,
+  ver_hora, abrir_programa, pesquisar_internet, monitorar_sistema, controlar_midia, salvar_memoria,
   tocar_youtube, verificar_clima, controlar_sistema, consultar_vigilante, analisar_tendencia, ver_tela
   ]
 llm_com_ferramentas = llm.bind_tools(lista_ferramentas)
@@ -35,7 +36,6 @@ mapa_funcoes = {
   "pesquisar_internet": pesquisar_internet,
   "monitorar_sistema": monitorar_sistema,
   "controlar_midia": controlar_midia,
-  "ler_memoria": ler_memoria,
   "salvar_memoria": salvar_memoria,
   "tocar_youtube": tocar_youtube,
   "verificar_clima": verificar_clima,
@@ -49,11 +49,23 @@ ferramentas_imediatas = ["abrir_programa", "controlar_midia", "tocar_youtube", "
 
 def pensar(texto_usuario):
   try:
-    memoria_atual = ler_memoria.invoke({})
-  except:
-    memoria_atual = "Memória vazia ou inacessível."
+    contexto = buscar_memoria.invoke(texto_usuario)
+  except Exception as e:
+    print(f"⚠️ Falha no Hipocampo: {e}")
+    contexto = "Memória indisponível no momento."
 
-  prompt_sistema = f"{PERSONALIDADE}\n\nMEMÓRIA DE LONGO PRAZO (O que você sabe sobre o Kelvin):\n{memoria_atual}"
+  prompt_sistema = f"""
+  {PERSONALIDADE}
+
+  DADOS DO BANCO DE MEMÓRIA (VERDADE ABSOLUTA):
+  {contexto}
+
+  DIRETRIZES:
+  1. Se a resposta estiver nos DADOS ACIMA, use-os sem hesitar.
+  2. Não invente informações que não estejam na memória.
+  3. Seja direta.
+  """
+
   mensagem_sistema = SystemMessage(content=prompt_sistema)
 
   mensagens = [mensagem_sistema, HumanMessage(content=texto_usuario)]
@@ -80,9 +92,12 @@ def pensar(texto_usuario):
 
     print(f"🔍 Dados crus recebidos: {dados_brutos}")
     novo_prompt = f"""
-        O usuário perguntou: '{texto_usuario}'
-        A ferramenta trouxe estes dados técnicos: {dados_brutos}
-        MISSÃO: Use os dados acima para responder a pergunta do usuário de forma natural, falada e curta.
+      DADOS DA MEMÓRIA: {contexto}
+      RESULTADO DAS FERRAMENTAS: {dados_brutos}
+      
+      PERGUNTA DO USUÁRIO: '{texto_usuario}'
+      
+      Responda usando os dados acima.
       """
     
     resposta_final = llm.invoke([mensagem_sistema, HumanMessage(content=novo_prompt)])
